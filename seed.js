@@ -1,7 +1,7 @@
 const data     = require('../poulailler/src/utils/data.json');
 const finances = require('../poulailler/src/utils/finances.json');
 
-const BASE = `http://localhost:${process.env.PORT ?? 3000}/api`;
+const BASE = `http://localhost:${process.env.PORT ?? 3002}/api`;
 
 async function post(path, body) {
   const res = await fetch(BASE + path, {

@@ -10,5 +10,6 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci --omit=dev
 COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/seed.js ./seed.js
 EXPOSE 3002
 CMD ["node", "dist/main"]

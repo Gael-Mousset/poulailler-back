@@ -5,11 +5,15 @@ export type CollecteDocument = HydratedDocument<Collecte>;
 
 @Schema({ timestamps: true })
 export class Collecte {
-  @Prop({ required: true, unique: true })
-  date: string;
+  @Prop({ required: true })
+  userId!: string;
+
+  @Prop({ required: true })
+  date!: string;
 
   @Prop({ required: true, min: 0 })
-  count: number;
+  count!: number;
 }
 
 export const CollecteSchema = SchemaFactory.createForClass(Collecte);
+CollecteSchema.index({ userId: 1, date: 1 }, { unique: true });

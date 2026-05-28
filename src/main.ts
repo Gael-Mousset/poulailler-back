@@ -13,7 +13,7 @@ async function bootstrap() {
       'http://localhost:5173',
     ],
     methods: ['GET', 'POST', 'PATCH', 'DELETE'],
-    allowedHeaders: ['Content-Type'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   });
 
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));

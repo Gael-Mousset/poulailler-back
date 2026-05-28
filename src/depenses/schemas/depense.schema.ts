@@ -6,16 +6,19 @@ export type DepenseDocument = HydratedDocument<Depense>;
 @Schema({ timestamps: true })
 export class Depense {
   @Prop({ required: true })
-  date: string;
+  userId!: string;
 
   @Prop({ required: true })
-  category: string;
+  date!: string;
 
   @Prop({ required: true })
-  name: string;
+  category!: string;
+
+  @Prop({ required: true })
+  name!: string;
 
   @Prop({ required: true, min: 0 })
-  amount: number;
+  amount!: number;
 }
 
 export const DepenseSchema = SchemaFactory.createForClass(Depense);

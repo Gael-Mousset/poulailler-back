@@ -8,38 +8,42 @@ import {
   Delete,
   HttpCode,
   HttpStatus,
+  UseGuards,
+  Request,
 } from '@nestjs/common';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { VentesService } from './ventes.service';
 import { CreateVenteDto } from './dto/create-vente.dto';
 import { UpdateVenteDto } from './dto/update-vente.dto';
 
+@UseGuards(JwtAuthGuard)
 @Controller('ventes')
 export class VentesController {
   constructor(private readonly ventesService: VentesService) {}
 
   @Post()
-  create(@Body() dto: CreateVenteDto) {
-    return this.ventesService.create(dto);
+  create(@Request() req: { user: { userId: string } }, @Body() dto: CreateVenteDto) {
+    return this.ventesService.create(req.user.userId, dto);
   }
 
   @Get()
-  findAll() {
-    return this.ventesService.findAll();
+  findAll(@Request() req: { user: { userId: string } }) {
+    return this.ventesService.findAll(req.user.userId);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.ventesService.findOne(id);
+  findOne(@Request() req: { user: { userId: string } }, @Param('id') id: string) {
+    return this.ventesService.findOne(req.user.userId, id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() dto: UpdateVenteDto) {
-    return this.ventesService.update(id, dto);
+  update(@Request() req: { user: { userId: string } }, @Param('id') id: string, @Body() dto: UpdateVenteDto) {
+    return this.ventesService.update(req.user.userId, id, dto);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  remove(@Param('id') id: string) {
-    return this.ventesService.remove(id);
+  remove(@Request() req: { user: { userId: string } }, @Param('id') id: string) {
+    return this.ventesService.remove(req.user.userId, id);
   }
 }

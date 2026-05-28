@@ -12,35 +12,35 @@ export class CollectesService {
     private collecteModel: Model<CollecteDocument>,
   ) {}
 
-  async upsert(dto: CreateCollecteDto): Promise<Collecte> {
+  async upsert(userId: string, dto: CreateCollecteDto): Promise<Collecte> {
     return this.collecteModel
       .findOneAndUpdate(
-        { date: dto.date },
+        { userId, date: dto.date },
         { count: dto.count },
         { upsert: true, new: true },
       )
       .exec();
   }
 
-  async findAll(): Promise<Record<string, number>> {
-    const docs = await this.collecteModel.find().exec();
+  async findAll(userId: string): Promise<Record<string, number>> {
+    const docs = await this.collecteModel.find({ userId }).exec();
     return docs.reduce(
       (acc, c) => ({ ...acc, [c.date]: c.count }),
       {} as Record<string, number>,
     );
   }
 
-  async findOne(date: string): Promise<Collecte | null> {
-    return this.collecteModel.findOne({ date }).exec();
+  async findOne(userId: string, date: string): Promise<Collecte | null> {
+    return this.collecteModel.findOne({ userId, date }).exec();
   }
 
-  async update(date: string, dto: UpdateCollecteDto): Promise<Collecte | null> {
+  async update(userId: string, date: string, dto: UpdateCollecteDto): Promise<Collecte | null> {
     return this.collecteModel
-      .findOneAndUpdate({ date }, { $set: dto }, { new: true })
+      .findOneAndUpdate({ userId, date }, { $set: dto }, { new: true })
       .exec();
   }
 
-  async remove(date: string): Promise<void> {
-    await this.collecteModel.deleteOne({ date }).exec();
+  async remove(userId: string, date: string): Promise<void> {
+    await this.collecteModel.deleteOne({ userId, date }).exec();
   }
 }

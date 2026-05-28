@@ -6,13 +6,16 @@ export type VenteDocument = HydratedDocument<Vente>;
 @Schema({ timestamps: true })
 export class Vente {
   @Prop({ required: true })
-  date: string;
+  userId!: string;
+
+  @Prop({ required: true })
+  date!: string;
 
   @Prop({ required: true, min: 1 })
-  oeufs: number;
+  oeufs!: number;
 
   @Prop({ required: true, min: 0 })
-  montant: number;
+  montant!: number;
 }
 
 export const VenteSchema = SchemaFactory.createForClass(Vente);

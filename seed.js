@@ -1,3 +1,8 @@
+// gaelmousset@orange.fr / Poulailler2000
+const SEED_EMAIL = 'gaelmousset@orange.fr';
+const SEED_PASSWORD = 'Poulailler2000';
+const MONGO_URI = process.env.MONGODB_URI ?? 'mongodb://localhost:27017/poulailler';
+
 const data = {
   "2026-05-08": 4,
   "2026-05-07": 10,
@@ -16,6 +21,7 @@ const data = {
 };
 
 const finances = {
+  // Catégories globales (userId: null) → visibles pour tous les utilisateurs
   categories: ["Poules", "Nourriture", "Matériel"],
   depenses: [
     { date: "2026-04-26", category: "Matériel",   name: "Poulailler Vevor",    amount: 154  },
@@ -34,37 +40,73 @@ const finances = {
 
 const BASE = `http://localhost:${process.env.PORT ?? 3002}/api`;
 
-async function post(path, body) {
+async function request(path, body, token, method = 'POST') {
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
   const res = await fetch(BASE + path, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
+    method,
+    headers,
+    body: body ? JSON.stringify(body) : undefined,
   });
-  if (!res.ok) throw new Error(`POST ${path} → HTTP ${res.status}`);
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`${method} ${path} → HTTP ${res.status}: ${text}`);
+  }
   if (res.status === 204) return null;
   return res.json();
+}
+
+async function getToken() {
+  try {
+    const result = await request('/auth/login', { email: SEED_EMAIL, password: SEED_PASSWORD });
+    console.log(`  ✓ Connecté en tant que ${SEED_EMAIL}`);
+    return result.token;
+  } catch {
+    console.log(`  → Compte inexistant, création…`);
+    const result = await request('/auth/register', { email: SEED_EMAIL, password: SEED_PASSWORD });
+    console.log(`  ✓ Compte créé : ${SEED_EMAIL}`);
+    return result.token;
+  }
+}
+
+async function seedGlobalCategories() {
+  // Insertion directe en MongoDB — pas de userId → catégories globales pour tous
+  const { MongoClient } = require('mongodb');
+  const client = new MongoClient(MONGO_URI);
+  await client.connect();
+  const col = client.db().collection('categories');
+  for (const name of finances.categories) {
+    await col.updateOne(
+      { name, userId: null },
+      { $set: { name, userId: null } },
+      { upsert: true },
+    );
+    console.log(`  ✓ Catégorie (globale) : ${name}`);
+  }
+  await client.close();
 }
 
 async function seed() {
   console.log('🌱 Démarrage de la migration…\n');
 
-  for (const name of finances.categories) {
-    await post('/categories', { name });
-    console.log(`  ✓ Catégorie   : ${name}`);
-  }
+  // 1. Catégories globales directement en MongoDB (pas de userId)
+  await seedGlobalCategories();
+
+  // 2. Authentification pour les données utilisateur
+  const token = await getToken();
 
   for (const d of finances.depenses) {
-    await post('/depenses', { date: d.date, category: d.category, name: d.name, amount: d.amount });
+    await request('/depenses', { date: d.date, category: d.category, name: d.name, amount: d.amount }, token);
     console.log(`  ✓ Dépense     : ${d.name} (${d.date})`);
   }
 
   for (const v of finances.ventes) {
-    await post('/ventes', { date: v.date, oeufs: v.oeufs, montant: v.montant });
+    await request('/ventes', { date: v.date, oeufs: v.oeufs, montant: v.montant }, token);
     console.log(`  ✓ Vente       : ${v.oeufs} œufs — ${v.date}`);
   }
 
   for (const [date, count] of Object.entries(data)) {
-    await post('/collectes', { date, count });
+    await request('/collectes', { date, count }, token);
     console.log(`  ✓ Collecte    : ${date} → ${count} œuf(s)`);
   }
 

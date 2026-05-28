@@ -12,30 +12,30 @@ export class VentesService {
     private venteModel: Model<VenteDocument>,
   ) {}
 
-  async create(dto: CreateVenteDto): Promise<Vente> {
-    return this.venteModel.create(dto);
+  async create(userId: string, dto: CreateVenteDto): Promise<Vente> {
+    return this.venteModel.create({ ...dto, userId });
   }
 
-  async findAll(): Promise<Vente[]> {
-    return this.venteModel.find().sort({ date: -1 }).exec();
+  async findAll(userId: string): Promise<Vente[]> {
+    return this.venteModel.find({ userId }).sort({ date: -1 }).exec();
   }
 
-  async findOne(id: string): Promise<Vente> {
-    const doc = await this.venteModel.findById(id).exec();
+  async findOne(userId: string, id: string): Promise<Vente> {
+    const doc = await this.venteModel.findOne({ _id: id, userId }).exec();
     if (!doc) throw new NotFoundException(`Vente ${id} introuvable`);
     return doc;
   }
 
-  async update(id: string, dto: UpdateVenteDto): Promise<Vente> {
+  async update(userId: string, id: string, dto: UpdateVenteDto): Promise<Vente> {
     const doc = await this.venteModel
-      .findByIdAndUpdate(id, { $set: dto }, { new: true })
+      .findOneAndUpdate({ _id: id, userId }, { $set: dto }, { new: true })
       .exec();
     if (!doc) throw new NotFoundException(`Vente ${id} introuvable`);
     return doc;
   }
 
-  async remove(id: string): Promise<void> {
-    const doc = await this.venteModel.findByIdAndDelete(id).exec();
+  async remove(userId: string, id: string): Promise<void> {
+    const doc = await this.venteModel.findOneAndDelete({ _id: id, userId }).exec();
     if (!doc) throw new NotFoundException(`Vente ${id} introuvable`);
   }
 }

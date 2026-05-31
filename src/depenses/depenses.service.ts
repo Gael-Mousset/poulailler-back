@@ -28,7 +28,7 @@ export class DepensesService {
 
   async update(userId: string, id: string, dto: UpdateDepenseDto): Promise<Depense> {
     const doc = await this.depenseModel
-      .findOneAndUpdate({ _id: id, userId }, { $set: dto }, { new: true })
+      .findOneAndUpdate({ _id: id, userId }, { $set: dto }, { returnDocument: 'after' })
       .exec();
     if (!doc) throw new NotFoundException(`Dépense ${id} introuvable`);
     return doc;

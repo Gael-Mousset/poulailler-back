@@ -28,7 +28,7 @@ export class VentesService {
 
   async update(userId: string, id: string, dto: UpdateVenteDto): Promise<Vente> {
     const doc = await this.venteModel
-      .findOneAndUpdate({ _id: id, userId }, { $set: dto }, { new: true })
+      .findOneAndUpdate({ _id: id, userId }, { $set: dto }, { returnDocument: 'after' })
       .exec();
     if (!doc) throw new NotFoundException(`Vente ${id} introuvable`);
     return doc;

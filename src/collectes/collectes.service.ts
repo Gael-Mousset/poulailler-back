@@ -16,8 +16,8 @@ export class CollectesService {
     return this.collecteModel
       .findOneAndUpdate(
         { userId, date: dto.date },
-        { count: dto.count },
-        { upsert: true, new: true },
+        { $set: { count: dto.count } },
+        { upsert: true, returnDocument: 'after' },
       )
       .exec();
   }
@@ -36,7 +36,7 @@ export class CollectesService {
 
   async update(userId: string, date: string, dto: UpdateCollecteDto): Promise<Collecte | null> {
     return this.collecteModel
-      .findOneAndUpdate({ userId, date }, { $set: dto }, { new: true })
+      .findOneAndUpdate({ userId, date }, { $set: dto }, { returnDocument: 'after' })
       .exec();
   }
 
